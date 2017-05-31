@@ -59,8 +59,10 @@ external_routes:
       - 0.0.0.0/0
 internal_routes:
   - name: "%%appname%%"
-    target_port: 8080
-    ports: 8080
+    ports:
+      - name: http
+        target_port: 8080
+        port: 8080
 scale:
   min: 4
 containers:
