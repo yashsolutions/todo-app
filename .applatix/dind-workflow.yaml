@@ -24,7 +24,7 @@ container:
               docker push nanotkarashish/todo"
 labels:
     # Enable docker access in this container by specifying the size of graph storage needed and the amount of cpu and memory required for docker commands
-    "ax_ea_docker_enable": '{ "graph-storage-name": "sampledockerapp", "graph-storage-size": "10Gi", "cpu_cores":"0.5", "mem_mib":"800"}'
+    "ax_ea_docker_enable": '{ "graph-storage-name": "sampledockerapp", "graph-storage-size": "1Gi", "cpu_cores":"0.1", "mem_mib":"80"}'
 
 ---
 type: container
