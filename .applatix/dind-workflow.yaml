@@ -6,6 +6,10 @@ description: build docker image
 inputs:
   parameters:
     code:
+    docker_username:
+      default: "%%secrets.==$1$key=default$text$ARfqu3F1jR6Tlxks0UUK5WBYovKgGw9U2MMyHCINvsqr8hZMGseSNq5UKItipkzjRLlgO2I201PO+evEVW/gKCo79cfhsIQRBZxyP5Ef0JyOGTQ4zIdE1Nd3oNX97OlGUwN+nFz0esVtd4Ollwk6sW52v99i1z1AlY5/9aVLExJOvJYWEhGO9cqYLOs2PPpLb3oKATgE5oIxSk0uRHtXl1+JfbD3IPnuTZjHahncBlUOVg83Lfvqi1MuDM1FnNIK65Axz35AeO+w2Iog5zy9cJLpcqL1tmMW6SywRWMNzjuK0FVwugGToMyLQHrAcSE1DTzq0nM2oumKg8lI0Va7cFVDep15l74f9EVhcpqK3O86JmA3A96PWANEO0eSHjtkeGOcn1vqbKq5CNwHpSd+mYxNYo2Y4NbTbocoDj0JmMBmEw====%%"
+    docker_password:
+      default: "%%secrets.==$1$key=default$text$ASP948HDQEOQhw5VD5ym1J94Utl2ung4jY1zm56ar+aGrq+HyTfY1DDksJjRvB+ayeQKgfUnBzUNJN073YbO/WHgqjIKhFCeI3KSnlfJxWMYs4afYajfmOBvgaj2apXn1qrXXQyNqFMGxfLO9/jJRm6qADrzazX9FyOysqPo0WkgI2Q2aOdDnYCh67JAzazaSzK4yRvqMRMyIa9ueDZlhELpog3QB99fdJse7eoRBf4vp9UbCXduDWwCNFDdwICkFuxGRD0Uzds0rycfgPLEJwbBogYR0ghennchDrcBrJd6YsgP+xcFfW9lx+s7QhNsTSFyevriNZp3A3HIlutlzzEW9kdnxQnS8T3ei0+evyXR2Nrazp2M2fE/Nk24fPcu/XBGTe5bjM4X0QnUFqCJgAk/WN6a74BO0sTo/QMatekipA====%%"
   artifacts:
   - from: "%%code%%"
     path: "/src"
@@ -15,6 +19,7 @@ container:
   # The docker:1.12 image already has the docker command installed
   image: docker:1.12
   command: "cd /src &&
+              docker login -u %%docker_username%% -p %%docker_password%% &&
               docker build -f Dockerfile -t nanotkarashish/todo . &&
               docker push nanotkarashish/todo"
 labels:
@@ -52,7 +57,12 @@ external_routes:
     target_port: 80
     ip_white_list:
       - 0.0.0.0/0
-
+internal_routes:
+  - name: "%%appname%%"
+    target_port: 8080
+    port: 8080
+scale:
+  min: 4
 containers:
   - sampleapp:
       template: sampleapp-image-container
