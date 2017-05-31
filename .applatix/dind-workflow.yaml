@@ -35,6 +35,19 @@ inputs:
     version:
 container:
   image: "nanotkarashish/todo"
+  readiness_probe:
+    httpGet:
+      path: /
+      port: 80
+    initial_delay_seconds: 30
+    timeout_seconds: 5
+  liveness_probe:
+    httpGet:
+      path: /
+      port: 80
+    initial_delay_seconds: 30
+    timeout_seconds: 5
+
 
 ---
 type: deployment
@@ -68,6 +81,8 @@ scale:
 containers:
   - sampleapp:
       template: sampleapp-image-container
+      parameters:
+        PROBE_CMD: sh -c 'ls -l /src'
 
 ---
 type: workflow
