@@ -5,12 +5,9 @@ description: Get approvals
 inputs:
   parameters:
     required_approvals:
-      default: ashish.nanotkar@msystechnologies.com
     optional_approvals:
-    number_of_optional_approvals_needed: 
-      default: 0
+    number_of_optional_approvals_needed:
     timeout_in_minutes:
-      default: 30
 
 container:
   image: get.applatix.io/axapproval:v2.0.1

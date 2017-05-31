@@ -111,13 +111,13 @@ inputs:
     version:
       default: "v1"
     required_approvals:
-      default: " "
+      default: "ashish.nanotkar@msystechnologies.com"
     optional_approvals:
       default: " "
     number_of_optional_approvals_needed:
       default: 0
     timeout_in_minutes:
-      default: 10 
+      default: 30 
  
 steps:
   - checkout:
