@@ -1,0 +1,20 @@
+type: container
+name: axapproval
+description: Get approvals
+
+inputs:
+  parameters:
+    required_approvals:
+    optional_approvals:
+    number_of_optional_approvals_needed:
+    timeout_in_minutes:
+
+container:
+  image: get.applatix.io/axapproval:v2.0.1
+  resources:
+    mem_mib: 128
+    cpu_cores: 0.01
+  command: sh -c 'axapproval --required_list "%%required_approvals%%"
+    --optional_list "%%optional_approvals%%"
+    --number_optional "%%number_of_optional_approvals_needed%%"
+    --timeout "%%timeout_in_minutes%%"'

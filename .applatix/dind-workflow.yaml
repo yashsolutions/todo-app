@@ -1,0 +1,131 @@
+---
+type: container
+name: docker-image-build-container
+description: build docker image
+
+inputs:
+  parameters:
+    code:
+    version:
+    # Encoded username and password
+    docker_username:
+      default: "%%secrets.==$1$key=default$text$AWlyxzTMKtkPn7s8ayj7UNs2+AVOBpajcNjOhggOtocMCejf3gaM1+3W12D+lLyEUYTqlj0fbZ4XjPzz2sYriFLWqMJzv7iXrBH8+tQOQmx3WDKksMMlsIlOHM24nFIBdyrsYKch2VuL85mNkfrh5yhvLG1wRE+rc3gJ8nPtdz63KW7Qqa5CV35y5LrJU7KXvCBMry4K9KIqLscBIE+1QO4uP/Uc9EVeaomcfxILLIR6Qr8jRX6nXBvLxBdrPpJDqPcAphr1zigyFS6Q+cq0nef8spEChbcEgrWK5JWIfz1Uh+Rt6PRYB7yuA3dPFh8byfGSIsSGSa/vAuckB+yvK0iLhmLdlNw2ptMO9it1zvn7Kj0gH94LVAJv1cei2Zbf6b+BfAYJcahoAjcEqSlhil/m4AbMW0hqFe43K/pNALWRGQ====%%"
+    docker_password:
+      default: "%%secrets.==$1$key=default$text$AQkQcEi8RWfIPf0wiryov2abAPDSmEBdYokTftIgXGcUJcaiv02A9nkOuJgXoUO4yZWR5B+evyplXF5QsV+tcswRV7qPvmIByoMli3QrQ4qv9qJgdarVU1lwB9v1czkLKn2zelvoCmpw8ExkwWjFFIg7W1p4XBAAJEPKL9QL0tQnEIfPUi4wLyPIDVzvRx0F4GvPd9P7UgjzXWv1RAJ8oyP861Km2VxRR566Di8rsB8PLL2lgf3+vmQeh3uFNQU1Bjv56fDq+Rve6s+JRb42B+cST7AZA9ZY+PxwK36jmPzSNfw0wy5Iet7WQF0UmRJH4sHJjXUypPGg82j+i1HD9I+eejzvg7gJumMYSBH4LqB7XViTOCuuz86k4aP9Fp68eh7haMNLxVb0524kEBX5NK/qEyB6ip2Bu1XoV+n1xRYnJw====%%"
+
+  artifacts:
+  - from: "%%code%%"
+    path: "/src"
+
+container:
+  # Build a docker image and push it
+  # The docker:1.12 image already has the docker command installed
+  image: docker:1.12
+  command: "cd /src &&
+              docker login -u %%docker_username%% -p %%docker_password%% get.applatix.io &&
+              docker build -f Dockerfile -t get.applatix.io/demo/sampleapp-image:%%version%% . &&
+              docker push get.applatix.io/demo/sampleapp-image:%%version%%"
+labels:
+    # Enable docker access in this container by specifying the size of graph storage needed and the amount of cpu and memory required for docker commands
+    "ax_ea_docker_enable": '{ "graph-storage-name": "sampledockerapp", "graph-storage-size": "10Gi", "cpu_cores":"0.5", "mem_mib":"800"}'
+
+---
+type: container
+name: sampleapp-image-container
+description: Run a sample app (node based web server.)
+inputs:
+  parameters:
+    version:
+container:
+  image: "get.applatix.io/demo/sampleapp-image:%%version%%"
+  command: "cd /usr/src/app && npm install && npm start"
+
+---
+type: deployment
+name: docker-image-deployment
+inputs:
+  parameters:
+    appname:
+      default: "sampleapp"
+    domain:
+      default: " skynet3.applatix.net"
+    version:
+      default: "v1"
+
+application:
+  name: "%%appname%%"
+deployment:
+  name: "node"
+external_routes:
+  - name: "%%appname%%"
+    target_port: 80
+    ip_white_list:
+      - 0.0.0.0/0
+
+containers:
+  - sampleapp:
+      template: sampleapp-image-container
+
+---
+type: workflow
+name: docker-image-build
+inputs:
+  parameters:
+    commit:
+      default: "%%session.commit%%"
+    repo:
+      default: "%%session.repo%%"
+    version:
+      default: "v1"
+
+steps:
+  - checkout:
+      template: axscm-checkout
+  - build:
+      template: docker-image-build-container
+      parameters:
+        code: "%%steps.checkout.code%%"
+
+---
+type: workflow
+name: docker-image-deploy
+inputs:
+  parameters:
+    version:
+      default: "v1"
+
+steps:
+  - deploy:
+      template: docker-image-deployment
+
+---
+type: workflow
+name: docker-image-build-approve-deploy
+inputs:
+  parameters:
+    commit:
+      default: "%%session.commit%%"
+    repo:
+      default: "%%session.repo%%"
+    version:
+      default: "v1"
+    required_approvals:
+      default: " "
+    optional_approvals:
+      default: " "
+    number_of_optional_approvals_needed:
+      default: 0
+    timeout_in_minutes:
+      default: 10 
+ 
+steps:
+  - checkout:
+      template: axscm-checkout
+  - build:
+      template: docker-image-build-container
+      parameters:
+        code: "%%steps.checkout.code%%"
+  - approval:
+      template: axapproval
+  - deploy:
+      template: docker-image-deployment
