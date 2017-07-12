@@ -1,6 +1,4 @@
-FROM ubuntu
-RUN apt-get update
-RUN apt-get install -y nodejs-legacy nodejs npm
+FROM nodejs
 ADD ./ /app/
 WORKDIR /app
 RUN npm install
