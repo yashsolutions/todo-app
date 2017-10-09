@@ -1,7 +1,7 @@
 var Todo = require('./models/todo');
 
 if ('dev' == process.env.DEPLOY_ENV){
-    Todo.remove({}, callback)
+    Todo.remove({})
 }
 
 function getTodos(res) {
